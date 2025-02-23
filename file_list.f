@@ -1,5 +1,6 @@
 +incdir+./src/common_cells/include
 +incdir+./src/apb_pulp/include
++incdir+./tb
 
 ./src/common_cells/src/cf_math_pkg.sv
 ./src/common_cells/src/addr_decode_dync.sv
@@ -18,5 +19,8 @@
 ./src/EF_TCC32/hdl/rtl/EF_TCC32.v
 ./src/EF_TCC32/hdl/rtl/bus_wrappers/EF_TCC32_apb_pulp.sv
 ./src/periphery.sv
+./tb/tb_env_pkg.sv
 ./tb/tb.sv
-./tb/main.cpp
+./tb/apb_tasks.svh
+./tb/regs_access_test.svh
+#./tb/main.cpp
