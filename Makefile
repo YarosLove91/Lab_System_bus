@@ -38,7 +38,7 @@ ENABLE_COVERAGE  ?= 1
 
 VERILATOR_FLAGS ?=
 # Generate C++ in executable form
-VERILATOR_FLAGS += -cc --exe
+VERILATOR_FLAGS += -cc --exe --main
 # Generate makefile dependencies (not shown as complicates the Makefile)
 #VERILATOR_FLAGS += -MMD
 # Optimize
