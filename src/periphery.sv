@@ -69,6 +69,16 @@ endfunction : get_addr_map
 
 addr_map_t periph_addr_map = get_addr_map();
 
+`ifndef SYNTHESIS
+initial begin
+    $display("PERIPHERY SLAVES ADDR MAP:",);
+    for (int i = 0; i < SLAVES_QTY; i++) begin
+        $display("N: %1d | Slave %1d | Start addr: %8h | End addr: %8h", i, periph_addr_map[i].idx, 
+            periph_addr_map[i].start_addr, periph_addr_map[i].end_addr);
+    end
+end
+`endif
+
 APB #(.ADDR_WIDTH(APB_AW), .DATA_WIDTH(APB_DW)) s_apb_selected[SLAVES_QTY - 1:0]();
 
 localparam SLV_SEL_W = cf_math_pkg::idx_width(SLAVES_QTY);
