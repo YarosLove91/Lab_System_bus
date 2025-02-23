@@ -25,8 +25,11 @@ localparam EF_TCC32_IDX = 0                           ;
 localparam RTC_IDX      = EF_TCC32_IDX  + EF_TCC32_QTY;
 localparam SLAVES_QTY   = RTC_IDX       + RTC_QTY     ;
 
-localparam EF_TCC32_REGS_QTY = 1024; // 1024 - 963 = 61 reserved
-localparam RTC_REGS_QTY      = 16  ; // 16 - 13 = 3 reserved
+localparam EF_TCC32_REGS_QTY = 1024; // 1024 - 963 = 61 reserved | 0x0000 - 0x0FFC (if qty == 1)
+localparam RTC_REGS_QTY      = 16  ; // 16 - 13 = 3 reserved     | 0x1000 - 0x103C (if qty == 1)
+
+localparam EF_TCC32_BA  = 0;
+localparam RTC_BA       = EF_TCC32_QTY * EF_TCC32_REGS_QTY * 4;
 
 // slave address map rule
 typedef struct packed {
@@ -40,21 +43,25 @@ typedef rule_t [SLAVES_QTY - 1:0] addr_map_t;
 
 function addr_map_t get_addr_map();
     addr_map_t addr_map;
+    int ef_tcc32_idx, rtc_idx;
 
-    for (int i = 0; i < EF_TCC32_QTY; i++) begin
-        addr_map[i] = rule_t'{
-            idx:        unsigned'(i),
-            start_addr: PERIPH_BA + ( i    * EF_TCC32_REGS_QTY * 4),
-            end_addr:   PERIPH_BA + ((i+1) * EF_TCC32_REGS_QTY * 4)
+    for (int rule_idx = 0; rule_idx < EF_TCC32_QTY; rule_idx++) begin
+        ef_tcc32_idx = rule_idx;
+        addr_map[rule_idx] = rule_t'{
+            idx:        unsigned'(rule_idx),
+            start_addr: PERIPH_BA + ( ef_tcc32_idx    * EF_TCC32_REGS_QTY * 4),
+            end_addr:   PERIPH_BA + ((ef_tcc32_idx+1) * EF_TCC32_REGS_QTY * 4)
         };
     end
 
-    for (int i = EF_TCC32_QTY; i < (EF_TCC32_QTY + RTC_QTY); i++) begin
-        addr_map[i] = rule_t'{
-            idx:        unsigned'(i),
-            start_addr: PERIPH_BA + ( i    * RTC_REGS_QTY * 4),
-            end_addr:   PERIPH_BA + ((i+1) * RTC_REGS_QTY * 4)
+    rtc_idx = 0;
+    for (int rule_idx = EF_TCC32_QTY; rule_idx < (EF_TCC32_QTY + RTC_QTY); rule_idx++) begin
+        addr_map[rule_idx] = rule_t'{
+            idx:        unsigned'(rule_idx),
+            start_addr: RTC_BA + ( rtc_idx    * RTC_REGS_QTY * 4),
+            end_addr:   RTC_BA + ((rtc_idx+1) * RTC_REGS_QTY * 4)
         };
+        rtc_idx++;
     end
 
     return addr_map;
@@ -88,23 +95,28 @@ apb_demux_intf #(
     .APB_DATA_WIDTH(APB_DW    ),
     .NoMstPorts    (SLAVES_QTY)
 ) i_apb_demux_intf (
-    .slv     (s_apb                ),
+    .slv     (s_apb          ),
     .mst     (s_apb_selected.Master),
     .select_i(periph_slv_sel       )
 );
 
-
-EF_TCC32_apb #(.APB_ADDR_W(APB_AW)) i_EF_TCC32_apb (
-    .ext_clk  (ef_tcc32_ext_clk            ),
-    .PCLK     (pclk                        ),
-    .PRESETn  (prst_n                      ),
-    .irq      (ef_tcc32_irq                ),
-    .gpio_pwm (ef_tcc32_pwm                ),
-    .apb_slave(s_apb_selected[EF_TCC32_IDX])
+// TODO: add 'generate' for arbitrary number of instances depending on EF_TCC32_QTY and RTC_QTY
+EF_TCC32_apb #(
+    .APB_ADDR_W(APB_AW     ),
+    .BASE_ADDR (EF_TCC32_BA)
+) i_EF_TCC32_apb (
+    .ext_clk  (ef_tcc32_ext_clk                  ),
+    .PCLK     (pclk                              ),
+    .PRESETn  (prst_n                            ),
+    .irq      (ef_tcc32_irq                      ),
+    .gpio_pwm (ef_tcc32_pwm                      ),
+    .apb_slave(s_apb_selected[EF_TCC32_IDX].Slave)
 );
 
-
-rtc_apb #(.APB_ADDR_W(APB_AW)) i_rtc_apb (
+rtc_apb #(
+    .APB_ADDR_W(APB_AW),
+    .BASE_ADDR (RTC_BA)
+) i_rtc_apb (
     .pclk  (pclk                         ),
     .prst_n(prst_n                       ),
     .irq   (rtc_irq                      ),
