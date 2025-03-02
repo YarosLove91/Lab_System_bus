@@ -72,8 +72,15 @@ VERILATOR_FLAGS += --top tb
 VERILATOR_INPUT ?=
 # Input files for Verilator
 # VERILATOR_INPUT = ../rtc/rtl/rtc_apb.sv ../rtc/rtl/apb_ ../rtc/rtl/rtc_top.sv ../rtc/rtl/rtc_clock.sv ../rtc/rtl/rtc_date.sv main.cpp rtc.cpp
-VERILATOR_INPUT = -f file_list.f
-
+ifeq ($(MAKECMDGOALS), rtc_tb)
+    VERILATOR_INPUT = -f rtc_tb_list.f
+else ifeq ($(MAKECMDGOALS), apb_top_tb)
+    VERILATOR_INPUT = -f file_list.f
+else ifneq ($(MAKECMDGOALS), )
+    $(error Unknow target: $(MAKECMDGOALS))
+else
+    $(error ERROR. Use 'make rtc_tb' or 'make apb_top_tb')
+endif
 
 ######################################################################
 # Create annotated source
@@ -89,6 +96,8 @@ endif
 
 ######################################################################
 default: run
+rtc_tb:run
+apb_top_tb:run
 
 run:
 	@echo
