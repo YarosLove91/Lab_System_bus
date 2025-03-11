@@ -25,11 +25,13 @@ int main(int argc, char** argv) {
     rtc.print_time(); 
 
     uint32_t start_time = rtc.get_time();
+    std::cout << "start_time raw: 0x" << start_time << std::hex << std::endl;
 
     uint32_t wait_cycles = 1000;
     rtc.wait_clk(wait_cycles);
 
     uint32_t end_time = rtc.get_time();
+    std::cout << "end_time raw: 0x" << end_time << std::hex << std::endl;
 
 
     start_time = rtc.time_to_sec(start_time);
