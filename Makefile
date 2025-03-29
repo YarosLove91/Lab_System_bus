@@ -34,7 +34,8 @@ endif
 ###############################################################################
 
 OUTPUT_DIR       ?= tb_output
-ENABLE_COVERAGE  ?= 1  
+ENABLE_COVERAGE  ?= 1
+TEST_NAME 		 ?= REGS_ACCESS_TEST
 
 VERILATOR_FLAGS ?=
 # Generate C++ in executable form
@@ -71,15 +72,16 @@ VERILATOR_FLAGS += --top tb
 
 VERILATOR_INPUT ?=
 # Input files for Verilator
-# VERILATOR_INPUT = ../rtc/rtl/rtc_apb.sv ../rtc/rtl/apb_ ../rtc/rtl/rtc_top.sv ../rtc/rtl/rtc_clock.sv ../rtc/rtl/rtc_date.sv main.cpp rtc.cpp
-ifeq ($(MAKECMDGOALS), rtc_tb)
+ifeq ($(MAKECMDGOALS), rtc_cpp_tb)
     VERILATOR_INPUT = -f rtc_tb_list.f
-else ifeq ($(MAKECMDGOALS), apb_top_tb)
+else ifeq ($(MAKECMDGOALS), periph_sysver_tb)
+	# add test define
+	VERILATOR_FLAGS += +define+$(TEST_NAME)
     VERILATOR_INPUT = -f file_list.f
 else ifneq ($(MAKECMDGOALS), )
     $(error Unknow target: $(MAKECMDGOALS))
 else
-    $(error ERROR. Use 'make rtc_tb' or 'make apb_top_tb')
+    $(error ERROR. Use 'make rtc_cpp_tb' or 'make periph_sysver_tb')
 endif
 
 ######################################################################
@@ -96,8 +98,8 @@ endif
 
 ######################################################################
 default: run
-rtc_tb:run
-apb_top_tb:run
+rtc_cpp_tb:run
+periph_sysver_tb:run
 
 run:
 	@echo

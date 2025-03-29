@@ -4,7 +4,13 @@ import tb_env_pkg::*;
 
 // includes (included here cause tasks use signals declared in this file)
 `include "apb_tasks.svh"
-`include "regs_access_test.svh"
+
+//--------testcases' tasks includes---------
+`ifdef REGS_ACCESS_TEST
+    `include "regs_access_test.svh"
+`elsif EF_TCC32_TEST
+    `include "ef_tcc32_test.svh"
+`endif
 
 // apb interface
 APB #(.ADDR_WIDTH(APB_AW), .DATA_WIDTH(APB_DW)) s_apb_if();
@@ -57,11 +63,31 @@ initial begin
     prst_n <= 1;
 end
 
+
 // tests start process
 initial begin
-    $display("Start test...",);
-    regs_access_test();
-    $display("End test!",);
+    err_cnt = 0;
+
+    `ifdef REGS_ACCESS_TEST
+        regs_access_test();
+    `elsif EF_TCC32_TEST
+        ef_tcc32_test();
+    `else
+        err_cnt++;
+
+        $display(">>>> There is no such test!");
+        $display("Available tests:");
+        for (int i = 0; i < available_tests.size(); i++) begin
+            $display("%s", available_tests[i]);
+        end
+        $display("\n");
+    `endif
+
+    $display(">>>>TEST END");
+    if (err_cnt)
+        $display(">>>>FAIL\n");
+    else
+        $display(">>>>SUCCESS\n");
     $finish;
 end
 
