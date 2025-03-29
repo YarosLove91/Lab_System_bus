@@ -23,4 +23,3 @@
 ./tb/tb.sv
 ./tb/apb_tasks.svh
 ./tb/regs_access_test.svh
-#./tb/main.cpp
