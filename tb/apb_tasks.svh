@@ -1,6 +1,6 @@
 import tb_env_pkg::*;
 
-task apb_write (input logic [31:0] address, input logic [31:0] data);
+task apb_write(input logic [31:0] address, input logic [31:0] data);
     begin
         @(posedge pclk);
         PSEL = 1;
