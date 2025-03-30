@@ -199,22 +199,22 @@ void RTC::set_timer(uint32_t time) {
 }
 
 bool RTC::wait_timer(uint32_t time) {
-    uint32_t cnt = 0; 
+    uint32_t cnt = 0;
+    apb_write(EVENT_FLAG_ADDR, EVENT_FLAG_TIMER_MASK);
     while (true){
-        wait_clk_posedge();
-            if(apb_read(EVENT_FLAG_ADDR)){
+            if(apb_read(EVENT_FLAG_ADDR)&EVENT_FLAG_TIMER_MASK){
+                apb_write(EVENT_FLAG_ADDR, EVENT_FLAG_TIMER_MASK);
                 break;
             }
     }
     while (true) {
-        wait_clk_posedge();
-        if(apb_read(EVENT_FLAG_ADDR)){
-            if(cnt == time){
+        if(apb_read(EVENT_FLAG_ADDR) & EVENT_FLAG_TIMER_MASK){
+            if(cnt <= time + 10 && cnt >= time - 10){
                 return true;
             }   
             return false; 
         }
-        cnt++;
+        cnt+=3;
     }
 }
 

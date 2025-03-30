@@ -51,17 +51,32 @@ int main(int argc, char** argv) {
         rtc.wait_clk(10);
         return 1;
     }
-    // assert(end_time == start_time + (wait_cycles/(calibration_value + 1)) && "Time is not correct");
 
     //alarm check
-    bool alarm = rtc.wait_alarm(alarm_date, alarm_time);
-    assert(alarm == true && "Alarm is not correct");
-
-    rtc.wait_clk(100);
+    if (rtc.wait_alarm(alarm_date, alarm_time) == true)
+    {
+        std::cout << "Check [1] - OK" << std::endl;
+    }
+    else
+    {
+        std::cout << "Check [1] - FAIL" << std::endl;
+        std::cout << "Alarm is not correct:" << std::endl;
+        rtc.wait_clk(10);
+        return 1;
+    }
 
     //timer check
-    bool timer = rtc.wait_timer(timer_period);
-    assert(timer == true && "Timer is not correct");
+    if (rtc.wait_timer(timer_period) == true)
+    {
+        std::cout << "Check [2] - OK" << std::endl;
+    }
+    else
+    {
+        std::cout << "Check [2] - FAIL" << std::endl;
+        std::cout << "Timer is not correct:" << std::endl;
+        rtc.wait_clk(10);
+        return 1;
+    }
 
     rtc.print_time(); 
 
