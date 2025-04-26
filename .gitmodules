@@ -10,3 +10,9 @@
 [submodule "src/common_cells"]
 	path = src/common_cells
 	url = https://github.com/pulp-platform/common_cells.git
+[submodule "src/axi2apb"]
+	path = src/axi2apb
+	url = https://github.com/pulp-platform/axi2apb.git
+[submodule "src/axi"]
+	path = src/axi
+	url = https://github.com/YarosLove91/axi.git

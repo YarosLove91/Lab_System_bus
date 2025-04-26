@@ -66,7 +66,7 @@ VERILATOR_FLAGS += +incdir+../src/common_cells/include
 VERILATOR_FLAGS += +incdir+../src/apb_pulp/include
 VERILATOR_FLAGS += --top tb
 # Run Verilator in debug mode
-#VERILATOR_FLAGS += --debug
+# VERILATOR_FLAGS += --debug
 # Add this trace to get a backtrace in gdb
 #VERILATOR_FLAGS += --gdbbt
 
@@ -74,6 +74,8 @@ VERILATOR_INPUT ?=
 # Input files for Verilator
 ifeq ($(MAKECMDGOALS), rtc_cpp_tb)
     VERILATOR_INPUT = -f rtc_tb_list.f
+else ifeq ($(MAKECMDGOALS), axi_rtc_cpp_tb)
+    VERILATOR_INPUT = -f rtc_axi_tb_list.f
 else ifeq ($(MAKECMDGOALS), periph_sysver_tb)
 	# add test define
 	VERILATOR_FLAGS += +define+$(TEST_NAME)
@@ -100,6 +102,7 @@ endif
 default: run
 rtc_cpp_tb:run
 periph_sysver_tb:run
+axi_rtc_cpp_tb: run
 
 run:
 	@echo
