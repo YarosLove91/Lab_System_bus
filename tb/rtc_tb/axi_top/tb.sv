@@ -12,7 +12,7 @@ module tb(
     // AXI Lite Write Data Channel
     input  logic [31:0] axi_wdata,    // Write Data
     input  logic [3:0]  axi_wstrb,    // Write Strobes
-    input  logic        axi_wvalid,   // Write Valid
+    input  logic        axi_wvalid,
     output logic        axi_wready,   // Write Ready
     
     // AXI Lite Write Response Channel

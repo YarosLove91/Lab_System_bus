@@ -65,6 +65,7 @@ VERILATOR_FLAGS += --timing
 VERILATOR_FLAGS += +incdir+../src/common_cells/include
 VERILATOR_FLAGS += +incdir+../src/apb_pulp/include
 VERILATOR_FLAGS += --top tb
+
 # Run Verilator in debug mode
 # VERILATOR_FLAGS += --debug
 # Add this trace to get a backtrace in gdb

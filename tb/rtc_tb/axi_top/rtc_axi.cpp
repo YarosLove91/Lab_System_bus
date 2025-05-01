@@ -22,7 +22,7 @@ RTC::RTC(bool enable_vcd, uint32_t rtc_base_addr) : clk_running(false), sim_time
         vcd = nullptr;
     }
 
-    clk_running.store(true);
+      clk_running.store(true);
     clk_thread = std::thread(&RTC::clock_generator, this);
 }
 
@@ -42,7 +42,7 @@ RTC::~RTC() {
 
 void RTC::clock_generator() {
     while (clk_running.load()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(5));
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
         top->clk_i = !top->clk_i;
         clk.store(top->clk_i);
         top->eval();
@@ -51,87 +51,64 @@ void RTC::clock_generator() {
     }
 }
 
+
 void RTC::wait_clk_posedge() {
+    bool prev_clk = clk.load();
     while (true) {
-        if (clk.load() == 0) { 
+        if (!prev_clk && clk.load()) {
             break;
         }
+        prev_clk = clk.load();
     }
-    while (true) {
-        if (clk.load() == 1) { 
-            break;
-        }
-    }
-    //   while (true) {
-    //     if (top->clk_i == 0) { 
-    //         break;
-    //     }
-    // }
-    // while (true) {
-    //     if (top->clk_i == 1) { 
-    //         break;
-    //     }
-    // }
 }
 
-void RTC::wait_clk(int cycles) {
-    int toggles = 0;
-    while (toggles < cycles) {
+void RTC::wait_clk(uint32_t cycles) {
+    for (uint32_t i = 0; i < cycles; i++) {
         wait_clk_posedge();
-        toggles++;
     }
 }
 
 void RTC::reset() {
     wait_clk_posedge();
     top->rst_ni = 0;
-    wait_clk(2);
+    wait_clk(10);
     top->rst_ni = 1;
 }
 
 void RTC::axi_write(uint32_t addr, uint32_t value) {
+    
     wait_clk_posedge();
-    
-    top->axi_awaddr = addr + _base_addr;
-    top->axi_awprot = 0; 
+    top->axi_awaddr = addr;
     top->axi_awvalid = 1;
-    
     top->axi_wdata = value;
-    top->axi_wstrb = 0xF;
     top->axi_wvalid = 1;
-    
-    top->axi_bready = 1; 
+    top->axi_wstrb = 0xF;
 
-    uint32_t cnt = 0;
-    while (!(top->axi_awready && top->axi_wready)) {
+    for (int i = 0; i < 10; ++i) {
+        if (top->axi_awready && top->axi_wready) break;
         wait_clk_posedge();
-        if (++cnt >= 5) {
-            std::cerr << "AXI Lite write transaction timeout!" << std::endl;
-            break;
-        }
+
     }
 
     top->axi_awvalid = 0;
     top->axi_wvalid = 0;
 
-    cnt = 0;
-    while (!top->axi_bvalid) {
-        wait_clk_posedge();
-        if (++cnt >= 5) {
-            std::cerr << "AXI Lite write response timeout!" << std::endl;
+    for (int i = 0; i < 10; ++i) {
+        if (top->axi_bvalid) {
+            wait_clk_posedge();
+            top->axi_bready = 1;
+            top->axi_bready = 0;
             break;
         }
+        
+        wait_clk_posedge();
     }
-    top->axi_bready = 0;
+
 }
 uint32_t RTC::axi_read(uint32_t addr) {
     wait_clk_posedge();
-    
-    // 1. Устанавливаем адрес
-    top->axi_araddr = addr + _base_addr;
     top->axi_arprot = 0; 
     top->axi_arvalid = 1;
-    
     top->axi_rready = 1;  
 
     uint32_t cnt = 0;
@@ -144,7 +121,6 @@ uint32_t RTC::axi_read(uint32_t addr) {
     }
 
     top->axi_arvalid = 0;
-
     cnt = 0;
     while (!top->axi_rvalid) {
         wait_clk_posedge();
@@ -157,6 +133,7 @@ uint32_t RTC::axi_read(uint32_t addr) {
     uint32_t data = top->axi_rdata;
     top->axi_rready = 0;
     
+    top->eval();
     return data;
 }
 

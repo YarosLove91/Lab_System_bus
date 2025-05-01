@@ -103,33 +103,48 @@ initial begin
 end
 `endif
 
-  axi_lite_to_apb_intf #(
-    .NoApbSlaves      (1),
-    .NoRules          (1),
-    .AddrWidth        (AXI_LITE_AW),
-    .DataWidth        (AXI_LITE_DW),
-    .PipelineRequest  (PipelineRequest),
-    .PipelineResponse (PipelineResponse),
-    .rule_t           (rule_t)
+
+  axil2apb #(
+    .C_AXI_ADDR_WIDTH        (AXI_LITE_AW),
+    .C_AXI_DATA_WIDTH        (AXI_LITE_DW),
+    .OPT_OUTGOING_SKIDBUFFER  (0)
   ) i_axi_to_apb (
-    .clk_i       (clk_i),
-    .rst_ni      (rst_ni),
+    .S_AXI_ACLK       (clk_i),
+    .S_AXI_ARESETN    (rst_ni),
 
-    .slv         (axil_slave),
+    .S_AXI_AWVALID  (axil_slave.aw_valid),
+    .S_AXI_AWREADY  (axil_slave.aw_ready),
+    .S_AXI_AWADDR   (axil_slave.aw_addr),
+    .S_AXI_AWPROT   (axil_slave.aw_prot),
+    .S_AXI_WVALID   (axil_slave.w_valid),
+    .S_AXI_WREADY   (axil_slave.w_ready),
+    .S_AXI_WDATA    (axil_slave.w_data),
+    .S_AXI_WSTRB    (axil_slave.w_strb),
+    .S_AXI_BVALID   (axil_slave.b_valid),
+    .S_AXI_BREADY   (axil_slave.b_ready),
+    .S_AXI_BRESP    (axil_slave.b_resp),
+    .S_AXI_ARVALID  (axil_slave.ar_valid),
+    .S_AXI_ARREADY  (axil_slave.ar_ready),
+    .S_AXI_ARADDR   (axil_slave.ar_addr),
+    .S_AXI_ARPROT   (axil_slave.ar_prot),
+    .S_AXI_RVALID   (axil_slave.r_valid),
+    .S_AXI_RREADY   (axil_slave.r_ready),
+    .S_AXI_RDATA    (axil_slave.r_data),
+    .S_AXI_RRESP    (axil_slave.r_resp),
 
-    .paddr_o     (paddr),
-    .pprot_o     (pprot),
-    .pselx_o     (psel),
-    .penable_o   (penable),
-    .pwrite_o    (pwrite),
-    .pwdata_o    (pwdata),
-    .pstrb_o     (pstrb),
-    .pready_i    (pready),
-    .prdata_i    (prdata),
-    .pslverr_i   (pslverr),
+    .M_APB_PADDR      (paddr),
+    .M_APB_PPROT      (pprot),
+    .M_APB_PSEL       (psel),
+    .M_APB_PENABLE    (penable),
+    .M_APB_PWRITE     (pwrite),
+    .M_APB_PWDATA     (pwdata),
+    .M_APB_PWSTRB     (pstrb),
+    .M_APB_PREADY     (pready),
+    .M_APB_PRDATA     (prdata),
+    .M_APB_PSLVERR    (pslverr)
     
-    .addr_map_i  (periph_addr_map)
   );
+
 
   assign s_apb_if.paddr   = paddr;
   assign s_apb_if.psel    = psel;

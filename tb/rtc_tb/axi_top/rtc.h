@@ -161,7 +161,7 @@ public:
     uint32_t axi_read(uint32_t addr);
 
     void run_cycles(int cycles);
-    void wait_clk(int cycles);
+    void wait_clk(uint32_t cycles);
 };
 
 #endif 

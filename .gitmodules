@@ -16,3 +16,6 @@
 [submodule "src/axi"]
 	path = src/axi
 	url = https://github.com/YarosLove91/axi.git
+[submodule "src/wb2axip"]
+	path = src/wb2axip
+	url = git@github.com:ZipCPU/wb2axip.git

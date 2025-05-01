@@ -20,6 +20,10 @@
 ./src/axi/src/axi_pkg.sv
 ./src/axi/src/axi_intf.sv
 ./src/axi/src/axi_lite_to_apb.sv
+./src/wb2axip/rtl/axil2apb.v
+./src/wb2axip/bench/formal/faxil_slave.v
+./src/wb2axip/bench/formal/fapb_master.v
+./src/wb2axip/rtl/skidbuffer.v
 
 ./src/rtc/rtl/rtc_date.sv
 ./src/rtc/rtl/rtc_clock.sv
