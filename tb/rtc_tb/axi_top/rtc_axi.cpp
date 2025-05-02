@@ -51,14 +51,16 @@ void RTC::clock_generator() {
     }
 }
 
-
 void RTC::wait_clk_posedge() {
-    bool prev_clk = clk.load();
     while (true) {
-        if (!prev_clk && clk.load()) {
+        if (clk.load() == 0) { 
             break;
         }
-        prev_clk = clk.load();
+    }
+    while (true) {
+        if ( clk.load() == 1) { 
+            break;
+        }
     }
 }
 
@@ -78,26 +80,27 @@ void RTC::reset() {
 void RTC::axi_write(uint32_t addr, uint32_t value) {
     
     wait_clk_posedge();
-    top->axi_awaddr = addr;
+    top->axi_awaddr = addr + 0x1000;
     top->axi_awvalid = 1;
     top->axi_wdata = value;
     top->axi_wvalid = 1;
     top->axi_wstrb = 0xF;
+    wait_clk_posedge();
 
     for (int i = 0; i < 10; ++i) {
         if (top->axi_awready && top->axi_wready) break;
         wait_clk_posedge();
-
     }
 
     top->axi_awvalid = 0;
     top->axi_wvalid = 0;
+    top->axi_bready = 1;
+    wait_clk_posedge();
 
     for (int i = 0; i < 10; ++i) {
         if (top->axi_bvalid) {
-            wait_clk_posedge();
-            top->axi_bready = 1;
             top->axi_bready = 0;
+            wait_clk_posedge();
             break;
         }
         
@@ -106,26 +109,31 @@ void RTC::axi_write(uint32_t addr, uint32_t value) {
 
 }
 uint32_t RTC::axi_read(uint32_t addr) {
+    std::cout << "Read transaction | addr: " << std::hex << addr << std::endl;
     wait_clk_posedge();
-    top->axi_arprot = 0; 
+    top->axi_arprot = 0;
+    top->axi_araddr = addr + 0x1000;
     top->axi_arvalid = 1;
-    top->axi_rready = 1;  
+    top->axi_rready = 1;
+    wait_clk_posedge();
 
     uint32_t cnt = 0;
     while (!top->axi_arready) {
         wait_clk_posedge();
         if (++cnt >= 5) {
-            std::cerr << "AXI Lite read address phase timeout!" << std::endl;
+            std::cerr << "AXI Lite read address phase timeout! | addr: " << std::hex << addr << std::endl;
             break;
         }
     }
 
     top->axi_arvalid = 0;
+    wait_clk_posedge();
+
     cnt = 0;
     while (!top->axi_rvalid) {
         wait_clk_posedge();
         if (++cnt >= 5) {
-            std::cerr << "AXI Lite read data phase timeout!" << std::endl;
+            std::cerr << "AXI Lite read data phase timeout! | addr: " << std::hex << addr << std::endl;
             break;
         }
     }
@@ -133,7 +141,6 @@ uint32_t RTC::axi_read(uint32_t addr) {
     uint32_t data = top->axi_rdata;
     top->axi_rready = 0;
     
-    top->eval();
     return data;
 }
 
