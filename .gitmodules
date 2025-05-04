@@ -19,3 +19,6 @@
 [submodule "src/wb2axip"]
 	path = src/wb2axip
 	url = git@github.com:ZipCPU/wb2axip.git
+[submodule "biRISC-V_periph"]
+	path = biRISC-V_periph
+	url = https://github.com/YarosLove91/biRISC-V_periph.git
